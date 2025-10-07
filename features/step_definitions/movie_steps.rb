@@ -21,7 +21,7 @@ end
 #  "When I uncheck the following ratings: PG, G, R"
 #  "When I check the following ratings: G"
 
-When(/^I (un)?check the following ratings (.*)$/) do |un, rating_list|
+When(/^I (un)?check the following ratings:?\s*(.*)$/) do |un, rating_list|
   rating_list.split(',').map(&:strip).each do |rating|
     checkbox_id = "ratings_#{rating}"
     el = find("##{checkbox_id}", visible: :all, match: :first)
@@ -41,9 +41,8 @@ Then(/^I should (not )?see the following movies: (.*)$/) do |no, movie_list|
 end
 
 Then(/I should see all the movies/) do
-  Movie.all.each do |movie|
-    expect(page).to have_content(movie.title)
-  end
+  rows = page.all('#movies tbody tr').count
+  expect(rows).to eq(Movie.count)
 end
 
 ### Utility Steps Just for this assignment.
@@ -78,14 +77,14 @@ When(/^I check all the ratings$/) do
   end
 end
 
-Then(/^I should see movies rated (.*)$/) do |rating_list|
+Then(/^I should see movies rated:?\s*(.*)$/) do |rating_list|
   ratings = rating_list.split(',').map(&:strip)
   Movie.where(rating: ratings).each do |movie|
     expect(page).to have_content(movie.title)
   end
 end
 
-Then(/^I should not see movies rated (.*)$/) do |rating_list|
+Then(/^I should not see movies rated:?\s*(.*)$/) do |rating_list|
   ratings = rating_list.split(',').map(&:strip)
   Movie.where(rating: ratings).each do |movie|
     expect(page).not_to have_content(movie.title)
