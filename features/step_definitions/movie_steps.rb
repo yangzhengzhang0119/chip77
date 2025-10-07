@@ -23,9 +23,8 @@ end
 
 When(/^I (un)?check the following ratings:?\s*(.*)$/) do |un, rating_list|
   rating_list.split(',').map(&:strip).each do |rating|
-    checkbox_id = "ratings_#{rating}"
-    el = find("##{checkbox_id}", visible: :all, match: :first)
-    un ? el.uncheck : el.check
+    cb = page.find(%(input[type="checkbox"][id="ratings_#{rating}"]), visible: :all)
+    un ? cb.uncheck : cb.check
   end
 end
 
@@ -41,7 +40,12 @@ Then(/^I should (not )?see the following movies: (.*)$/) do |no, movie_list|
 end
 
 Then(/I should see all the movies/) do
-  rows = page.all('#movies tbody tr').count
+  rows =
+    if page.has_css?('#movies tbody tr')
+      page.all('#movies tbody tr').count
+    else
+      page.all('#movies tr').count - 1
+    end
   expect(rows).to eq(Movie.count)
 end
 
@@ -72,9 +76,7 @@ Then (/^I should see "(.*)" before "(.*)"$/) do |e1, e2|
 end
 
 When(/^I check all the ratings$/) do
-  Movie.all.map(&:rating).uniq.each do |rating|
-    check("ratings_#{rating}")
-  end
+  page.all(%(input[type="checkbox"][id^="ratings_"]), visible: :all).each(&:check)
 end
 
 Then(/^I should see movies rated:?\s*(.*)$/) do |rating_list|
